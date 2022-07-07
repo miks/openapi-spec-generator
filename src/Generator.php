@@ -9,6 +9,7 @@ use LaravelJsonApi\Contracts\Server\Server;
 use LaravelJsonApi\OpenApiSpec\Builders\InfoBuilder;
 use LaravelJsonApi\OpenApiSpec\Builders\PathsBuilder;
 use LaravelJsonApi\OpenApiSpec\Builders\ServerBuilder;
+use LaravelJsonApi\Core\Support\AppResolver;
 
 class Generator
 {
@@ -37,8 +38,8 @@ class Generator
         $this->key = $key;
 
         $apiServer = config("jsonapi.servers.$key");
-        $app = app();
 
+        $app = new AppResolver(static fn() => app());
 
         $this->server = new $apiServer($app, $this->key);
 
