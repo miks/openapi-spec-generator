@@ -427,7 +427,13 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
               $schema = $fieldDataType->title($field->name());
 
               if (isset($example[$field->name()])) {
-                  $schema = $schema->example($example[$field->name()]);
+                  $exampleValue = $example[$field->name()];
+
+                  if ($exampleValue instanceof \UnitEnum) {
+                      $exampleValue = $exampleValue->value;
+                  }
+
+                  $schema = $schema->example($exampleValue);
               }
               if ($field->isReadOnly(null)) {
                   $schema = $schema->readOnly(true);
