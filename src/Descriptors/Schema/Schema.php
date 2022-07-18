@@ -471,7 +471,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     protected function relationship(
       Relation $relation,
       JsonApiResource $example,
-      bool $includeData = false
+      bool $includeData = true
     ): OASchema {
         $fieldId = $relation->name();
 
