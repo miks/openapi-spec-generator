@@ -296,6 +296,23 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
      *
      * @return array
      */
+    public function includes(Route $route): array
+    {
+        return [
+            Parameter::query('includes')
+                ->name('include')
+                ->description('Comma-separated list of relationships to include')
+                ->required(false)
+                ->allowEmptyValue(false)
+                ->schema(OASchema::string()),
+        ];
+    }
+
+    /**
+     * @param  \LaravelJsonApi\OpenApiSpec\Route  $route
+     *
+     * @return array
+     */
     public function pagination(Route $route): array
     {
         $pagination = $route->schema()->pagination();
