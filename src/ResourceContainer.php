@@ -44,6 +44,7 @@ class ResourceContainer
         if(!isset($this->resource[$fqn])){
             $this->loadResources($fqn);
         }
+
         return $this->resources[$fqn]->toArray();
     }
 
@@ -62,12 +63,21 @@ class ResourceContainer
      * @param  string  $model
      */
     protected function loadResources(string $model){
-        if(method_exists($model, 'all')){
-            $resources = $model::all()->map(function ($model) {
+        $resources = null;
+        $schema = $this->server->schemas()->schemaForModel($model);
+
+        $documentationClass = preg_replace('/(.*)(Schema)$/', '${1}Documentation', get_class($schema));
+
+        if (class_exists($documentationClass)) {
+            $resources = $documentationClass::examples();
+        } else if (method_exists($model, 'all')) {
+            $resources = $model::all();
+        }
+
+        if ($resources != null) {
+            $this->resources[$model] = $resources->map(function ($model) {
                 return $this->server->resources()->create($model);
             })->take(3);
-
-            $this->resources[$model] = $resources;
         }
     }
 }
