@@ -23,6 +23,7 @@ use LaravelJsonApi\Eloquent\Fields\Number;
 use LaravelJsonApi\Eloquent\Fields\Relations\Relation;
 use LaravelJsonApi\Eloquent\Pagination\CursorPagination;
 use LaravelJsonApi\Eloquent\Pagination\PagePagination;
+use LaravelJsonApi\NonEloquent\Fields\Attribute as NonEloquentAttribute;
 use LaravelJsonApi\OpenApiSpec\Builders\Paths\Operation\SchemaBuilder;
 use LaravelJsonApi\OpenApiSpec\Contracts\Descriptors\Schema\PaginationDescriptor;
 use LaravelJsonApi\OpenApiSpec\Contracts\Descriptors\Schema\SortablesDescriptor;
@@ -391,7 +392,13 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
               switch (true) {
                 case $field instanceof Attribute:
                   $key = 'attributes';
-                  break;
+                      break;
+                  case $field instanceof NonEloquentAttribute:
+                      $key = 'attributes';
+                      break;
+                  case $field instanceof Attribute:
+                      $key = 'attributes';
+                      break;
                 case $field instanceof Relation:
                   $key = 'relationships';
                   break;
@@ -443,21 +450,42 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
 
               $schema = $fieldDataType->title($field->name());
 
-              if (isset($example[$field->name()])) {
-                  $exampleValue = $example[$field->name()];
+              $exampleValue = $this->attributeExampleValue($example, $field);
 
-                  if ($exampleValue instanceof \UnitEnum) {
-                      $exampleValue = $exampleValue->value;
-                  }
-
+              if ($exampleValue) {
                   $schema = $schema->example($exampleValue);
               }
-              if ($field->isReadOnly(null)) {
+
+              if (method_exists($field, 'isReadOnly') && $field->isReadOnly(null)) {
                   $schema = $schema->readOnly(true);
               }
+
               return $schema;
           })->toArray();
     }
+
+    protected function attributeExampleValue($example, $field): mixed
+    {
+        if(!$example) {
+            return null;
+        }
+
+        $exampleValue = null;
+
+        if($field instanceof NonEloquentAttribute) {
+            $exampleValue = $example->attributes(null)[$field->name()];
+        }
+        else if (isset($example[$field->name()])) {
+            $exampleValue = $example[$field->name()];
+        }
+
+        if ($exampleValue instanceof \UnitEnum) {
+            $exampleValue = $exampleValue->value;
+        }
+
+        return $exampleValue;
+    }
+
 
     /**
      * @param  \Illuminate\Support\Collection  $relationships
