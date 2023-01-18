@@ -101,19 +101,23 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
           ->resource($route->schema()::model());
 
         $fields = $this->fields($route->schema()->fields(), $resource);
+        $properties = [
+            OASchema::string('type')
+                ->title('type')
+                ->default($route->name()),
+            OASchema::object('attributes')
+                ->properties(...$fields->get('attributes')),
+        ];
+
+        if ($fields->has('relationships')) {
+            $properties[] = OASchema::object('relationships')
+                ->properties(...$fields->get('relationships'));
+        }
 
         return OASchema::object($objectId)
           ->title('Resource/'.ucfirst($route->name(true))."/Store")
           ->required('type', 'attributes')
-          ->properties(
-            OASchema::string('type')
-              ->title('type')
-              ->default($route->name()),
-            OASchema::object('attributes')
-              ->properties(...$fields->get('attributes')),
-            OASchema::object('relationships')
-              ->properties(...$fields->get('relationships'))
-          );
+          ->properties(...$properties);
     }
 
     /**
@@ -129,20 +133,24 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
           ->resource($route->schema()::model());
 
         $fields = $this->fields($route->schema()->fields(), $resource);
+        $properties = [
+            OASchema::string('type')
+                ->title('type')
+                ->default($route->name()),
+            OASchema::string('id')
+                ->example($resource->id()),
+            OASchema::object('attributes')
+                ->properties(...$fields->get('attributes')),
+        ];
+
+        if ($fields->has('relationships')) {
+            $properties[] = OASchema::object('relationships')
+                ->properties(...$fields->get('relationships'));
+        }
 
         return OASchema::object($objectId)
           ->title('Resource/'.ucfirst($route->name(true)).'/Update')
-          ->properties(
-            OASchema::string('type')
-              ->title('type')
-              ->default($route->name()),
-            OASchema::string('id')
-              ->example($resource->id()),
-            OASchema::object('attributes')
-              ->properties(...$fields->get('attributes')),
-            OASchema::object('relationships')
-              ->properties(...$fields->get('relationships'))
-          )
+          ->properties(...$properties)
           ->required('type', 'id', 'attributes');
     }
 
