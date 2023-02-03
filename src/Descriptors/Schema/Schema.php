@@ -4,6 +4,7 @@
 namespace LaravelJsonApi\OpenApiSpec\Descriptors\Schema;
 
 
+use GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException;
 use GoldSpecDigital\ObjectOrientedOAS\Objects\Parameter;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -32,8 +33,8 @@ use GoldSpecDigital\ObjectOrientedOAS\Objects\Schema as OASchema;
 use LaravelJsonApi\OpenApiSpec\Descriptors\Descriptor;
 use LaravelJsonApi\OpenApiSpec\Descriptors\Schema\Filters;
 use LaravelJsonApi\Eloquent;
-use LaravelJsonApi\OpenApiSpec\Generator;
 use LaravelJsonApi\OpenApiSpec\Route;
+use LaravelJsonApi\Contracts\Schema\Relation as RelationContract;
 
 class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor, PaginationDescriptor
 {
@@ -52,8 +53,8 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
      * @param  string  $type
      * @param  string  $name
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @return OASchema
+     * @throws InvalidArgumentException
      */
     public function fetch(
       JASchema $schema,
@@ -90,8 +91,8 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     /**
      * @param  \LaravelJsonApi\OpenApiSpec\Route  $route
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @return OASchema
+     * @throws InvalidArgumentException
      */
     public function store(Route $route): OASchema
     {
@@ -123,8 +124,8 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     /**
      * @param  \LaravelJsonApi\OpenApiSpec\Route  $route
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @return OASchema
+     * @throws InvalidArgumentException
      */
     public function update(Route $route): OASchema
     {
@@ -155,7 +156,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function fetchRelationship(Route $route): OASchema
     {
@@ -175,7 +176,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function updateRelationship(Route $route): OASchema
     {
@@ -207,7 +208,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function attachRelationship(Route $route): OASchema
     {
@@ -240,7 +241,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function detachRelationship(Route $route): OASchema
     {
@@ -259,7 +260,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function fetchPolymorphicRelationship(
       Route $route,
@@ -387,7 +388,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
 
     /**
      * @param  \LaravelJsonApi\Contracts\Schema\Field[]  $fields
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $resource
+     * @param JsonApiResource $resource
      *
      * @return \Illuminate\Support\Collection
      */
@@ -407,7 +408,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
                   case $field instanceof Attribute:
                       $key = 'attributes';
                       break;
-                case $field instanceof Relation:
+                case $field instanceof RelationContract:
                   $key = 'relationships';
                   break;
                 default:
@@ -497,7 +498,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
 
     /**
      * @param  \Illuminate\Support\Collection  $relationships
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $example
+     * @param JsonApiResource $example
      *
      * @return array
      * @todo Fix relation field names
@@ -507,22 +508,22 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
       JsonApiResource $example
     ): array {
         return $relationships
-          ->map(function (Relation $relation) use ($example) {
+          ->map(function (RelationContract $relation) use ($example) {
               return $this->relationship($relation, $example);
           })->toArray();
 
     }
 
     /**
-     * @param \LaravelJsonApi\Eloquent\Fields\Relations\Relation $relation
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $example
-     * @param  bool  $includeData
+     * @param RelationContract $relation
+     * @param JsonApiResource $example
+     * @param bool $includeData
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @return OASchema
+     * @throws InvalidArgumentException
      */
     protected function relationship(
-      Relation $relation,
+      RelationContract $relation,
       JsonApiResource $example,
       bool $includeData = true
     ): OASchema {
@@ -549,15 +550,15 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @param \LaravelJsonApi\Eloquent\Fields\Relations\Relation $relation
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $example
+     * @param RelationContract $relation
+     * @param JsonApiResource $example
      * @param  string  $type
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
-     * @throws \GoldSpecDigital\ObjectOrientedOAS\Exceptions\InvalidArgumentException
+     * @return OASchema
+     * @throws InvalidArgumentException
      */
     protected function relationshipData(
-      Relation $relation,
+      RelationContract $relation,
       JsonApiResource $example,
       string $type
     ): OASchema {
@@ -593,20 +594,19 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
     }
 
     /**
-     * @param  mixed  $relation
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $example
+     * @param mixed  $relation
+     * @param JsonApiResource $example
      * @param  string  $type
      *
-     * @return \GoldSpecDigital\ObjectOrientedOAS\Objects\Schema
+     * @return OASchema
      */
     public function relationshipLinks(
       $relation,
       JsonApiResource $example,
       string $type
     ): OASchema {
-        $name = Str::dasherize(
-          Str::plural($relation->relationName())
-        );
+        $relationName = $relation instanceof Relation ? $relation->relationName() : 'Non-eloquent relation';
+        $name = Str::dasherize(Str::plural($relationName));
 
         /*
          * @todo Create real links
@@ -638,7 +638,7 @@ class Schema extends Descriptor implements SchemaDescriptor, SortablesDescriptor
 
     /**
      * @param  \LaravelJsonApi\OpenApiSpec\Route  $route
-     * @param  \LaravelJsonApi\Core\Resources\JsonApiResource  $resource
+     * @param JsonApiResource $resource
      *
      * @return array
      */

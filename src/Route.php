@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use LaravelJsonApi\Contracts\Schema\PolymorphicRelation;
 use LaravelJsonApi\Contracts\Schema\Schema;
 use LaravelJsonApi\Contracts\Server\Server;
-use LaravelJsonApi\Eloquent\Fields\Relations\Relation;
+use LaravelJsonApi\Contracts\Schema\Relation as RelationContract;
 
 class Route
 {
@@ -162,14 +162,14 @@ class Route
     }
 
     /**
-     * @return \LaravelJsonApi\Eloquent\Fields\Relations\Relation|null
+     * @return RelationContract|null
      */
-    public function relation(): ?Relation
+    public function relation(): ?RelationContract
     {
         $relation =  $this->relation ? $this->schema()
           ->relationship($this->relation) : null;
 
-        if ($relation !== null && !($relation instanceof Relation)) {
+        if ($relation !== null && !($relation instanceof RelationContract)) {
             throw new \RuntimeException("Unexpected Type");
         }
 
